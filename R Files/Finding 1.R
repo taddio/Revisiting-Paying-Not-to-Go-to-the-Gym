@@ -188,7 +188,9 @@ Customer_agreement$duration_of_membership_month_cutoff = (Customer_agreement$dur
 #Finding Average Attendance for dataset
 library(plyr)
 
-participant_ids = Customer_agreement$participant_id
+Customer_agreement_core = Customer_agreement[which(Customer_agreement$agreement_type_id == 17),] #Membership core only
+
+participant_ids = Customer_agreement_core$participant_id
 participant_checkin_ids = participant_checkin$participant_id
 
 table = table(participant_checkin_ids)
@@ -196,16 +198,42 @@ attendance_frequencies = as.data.frame(table)
 frequencies = attendance_frequencies$Freq
 frequencies_ids = attendance_frequencies$participant_checkin_ids
 
-total_attendance = participant_checkin_ids
+total_attendance = participant_ids
 for(i in 1:length(participant_ids)){
   index = which(frequencies_ids %in% participant_ids[i])
   if(length(index)!= 0){
-    total_attendance = c(total_attendance, frequencies[index])
+    total_attendance[i] = frequencies[index]
   }
   else{
-    total_attendance = c(total_attendance, 0)
+    total_attendance[i] = 0
   }
 }
+
+Customer_agreement_core$total_attendance = total_attendance
+total_attendance = as.numeric(total_attendance) 
+total_attendance_value = sum(total_attendance)
+
+library(dplyr)
+Customer_agreement_core_2 = distinct(Customer_agreement_core)
+
+duplicates = duplicated(participant_ids)
+duplicates_index = which(duplicates == TRUE)
+CA_start_dates = Customer_agreement_core$cleaned_agreement_sign_dt
+for(i in 1:length(duplicates_index)){
+  specific_duplicate_indices = which(partipant_ids)
+  if(Customer_agreement){
+    
+  }
+}
+Customer_agreement_core_2 = Customer_agreement_core[-duplicates_index,]
+total_attendance = as.numeric(Customer_agreement_core_2$total_attendance)
+total_attendance_value = sum(total_attendance)
+
+Customer_agreement_core_2 = 
+
+attendance = attendance_frequencies$Freq
+max_attendance = max(attendance)
+
 
 
 #Save Files
@@ -213,5 +241,5 @@ write.csv(participant_checkin, "participant_checkin_2.csv")
 
 write.csv(Customer_agreement, "Customer_agreement.csv")
 
-
+write.csv(Customer_agreement_core, "Customer_agreement_core.csv")
 
