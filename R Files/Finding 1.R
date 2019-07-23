@@ -11,6 +11,10 @@ library(readr)
 Customer_agreement = read_csv("Customer_Agreement.csv")
 Customer_agreement = Customer_agreement[, -1]
 
+library(readr)
+Customer_agreement_core = read_csv("Customer_agreement_core.csv")
+Customer_agreement_core = Customer_agreement_core[, -1]
+
 #---------------------------------------
 
 #Adding integer values to gym types
@@ -190,46 +194,37 @@ library(plyr)
 
 Customer_agreement_core = Customer_agreement[which(Customer_agreement$agreement_type_id == 17),] #Membership core only
 
-participant_ids = Customer_agreement_core$participant_id
-participant_checkin_ids = participant_checkin$participant_id
+participant_ids = Customer_agreement_core$participant_id #List of unique ids found in Customer Agreement
+participant_checkin_ids = participant_checkin$participant_id #List of IDs from checkin data
 
-table = table(participant_checkin_ids)
-attendance_frequencies = as.data.frame(table)
-frequencies = attendance_frequencies$Freq
-frequencies_ids = attendance_frequencies$participant_checkin_ids
-
-total_attendance = participant_ids
-for(i in 1:length(participant_ids)){
-  index = which(frequencies_ids %in% participant_ids[i])
-  if(length(index)!= 0){
-    total_attendance[i] = frequencies[index]
-  }
-  else{
-    total_attendance[i] = 0
-  }
-}
-
-Customer_agreement_core$total_attendance = total_attendance
-total_attendance = as.numeric(total_attendance) 
-total_attendance_value = sum(total_attendance)
-
-library(dplyr)
-Customer_agreement_core_2 = distinct(Customer_agreement_core)
+table = table(participant_checkin_ids) #Tabulates checkin data into unique IDs and frequency (number of checkins)
+attendance_frequencies = as.data.frame(table) #Convert table to data frame
+frequencies = attendance_frequencies$Freq #extract frequencies column
+frequencies_ids = attendance_frequencies$participant_checkin_ids #extract unique IDs
 
 duplicates = duplicated(participant_ids)
 duplicates_index = which(duplicates == TRUE)
-CA_start_dates = Customer_agreement_core$cleaned_agreement_sign_dt
+customer_agreement_statuses = Customer_agreement_core$agreement_status_id
+specific_duplicate_indices = which(duplicates == TRUE & customer_agreement_statuses != 3)
+
+checked = c()
 for(i in 1:length(duplicates_index)){
-  specific_duplicate_indices = which(partipant_ids)
-  if(Customer_agreement){
-    
+  index = which(participant_ids == participant_ids[duplicates_index[i]])
+  if(length(index) > 2){
+    if(length(which(checked == index[1])) == 0){
+      checked = c(checked, index[1])
+    }
   }
 }
-Customer_agreement_core_2 = Customer_agreement_core[-duplicates_index,]
-total_attendance = as.numeric(Customer_agreement_core_2$total_attendance)
-total_attendance_value = sum(total_attendance)
 
-Customer_agreement_core_2 = 
+check_duplicates_table = Customer_agreement_core[, c(1,5)]
+check_duplicates_table = check_duplicates_table[order(Customer_agreement_core$agreement_status_id),]
+
+Customer_agreement_core_clean = Customer_agreement_core[-specific_duplicate_indices, ]
+total_attendances = sum(Customer_agreement_core_clean$total_attendance)
+
+duplicates_2 = duplicated(Customer_agreement_core_clean$participant_id)
+duplicates_index_2 = which(duplicates_2 == TRUE)
 
 attendance = attendance_frequencies$Freq
 max_attendance = max(attendance)
