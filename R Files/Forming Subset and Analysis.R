@@ -12,8 +12,11 @@ Club_site = read_csv("Club_site.csv") #Read Club Site data
 Club_site_expanded = read_csv("Club_site_expanded.csv")
 
 Customer_agreement = read.csv("Customer_Agreement.csv") #Read Customer Agreement Data
+Customer_agreement = read_csv("Customer_agreement_subset_3.csv") #Read Customer Agreement Data
 
 Gym_customer = read_csv("Gym_Customer.csv") #Read Gym Customer data
+
+Registration = read_csv("B. Registration.csv")
 
 #--------------------------------------------------------------------------------------------
 #Finding number of attendances at each club
@@ -889,6 +892,76 @@ ggplot() +
 
 ggplot(regressor) + 
   geom_point(aes(x=.fitted, y=.stdresid))
+
+#-----------------------------------------------------------------------------------------------------
+#Gender of Gym Members
+
+Customer_agreement$gender = "I"
+
+for(i in 1:nrow(Customer_agreement)){
+  gender = Gym_customer$gender[which(Gym_customer$participant_id == Customer_agreement$participant_id[i])]
+  gender_predict = Gym_customer$gender_predict[which(Gym_customer$participant_id == Customer_agreement$participant_id[i])]
+  if(gender == "I"){
+    if(!is.na(gender_predict)){
+      Customer_agreement$gender[i] = gender_predict
+    }
+  }
+  else{
+    Customer_agreement$gender[i] = gender
+  }
+}
+
+Customer_agreement$gender[which(Customer_agreement$gender == "N")] = "I"
+
+library(plyr)
+genders = table(Customer_agreement$gender)
+gender = as.data.frame(genders)
+
+#---------------------------------------------------------------------------------------
+#Age at sign-up
+Registration = read_csv("B. Registration.csv")
+
+Registration$date = format(strptime(Registration$signup_datetime_localtime,
+                                    "%Y-%m-%d %H:%M:%S"), format = "%Y-%m-%d")
+
+Customer_agreement$age = 0
+
+for(i in 1:nrow(Customer_agreement)){
+  age = Registration$age[which(Registration$participant_id == Customer_agreement$participant_id[i])]
+  Customer_agreement$age[i] = age
+}
+
+length(which(Customer_agreement$age != 0))
+mean(Customer_agreement$age[which(Customer_agreement$age != 0)])
+sd(Customer_agreement$age[which(Customer_agreement$age != 0)])
+
+Customer_agreement$diff_age = 0
+for(i in 1:nrow(Customer_agreement)){
+  index = which(Registration$participant_id == Customer_agreement$participant_id[i])
+  diff_age = difftime(Registration$date[index], Customer_agreement$cleaned_agreement_sign_dt[i])
+  Customer_agreement$diff_age[i] = diff_age
+}
+Customer_agreement$diff_age = Customer_agreement$diff_age/365.25
+
+Customer_agreement$age_signup = 0
+Customer_agreement$age_signup = Customer_agreement$age - Customer_agreement$diff_age
+
+mean(Customer_agreement$age_signup[which(Customer_agreement$age_signup != 0)])
+sd(Customer_agreement$age_signup[which(Customer_agreement$age_signup != 0)])
+
+hist(Customer_agreement$age_signup[which(Customer_agreement$age_signup != 0)], breaks = 50, freq=FALSE, col="gray", 
+     xlab="Age", main="Age Distribution")
+curve(dnorm(x, mean=mean(Customer_agreement$age_signup[which(Customer_agreement$age_signup != 0)]),
+            sd(Customer_agreement$age_signup[which(Customer_agreement$age_signup != 0)])), add=TRUE, col="red") #line
+
+hist(Customer_agreement$age[which(Customer_agreement$age != 0)], breaks = 50, freq=FALSE, col="gray", 
+     xlab="Age", main="Age Distribution")
+curve(dnorm(x, mean=mean(Customer_agreement$age[which(Customer_agreement$age != 0)]),
+            sd(Customer_agreement$age[which(Customer_agreement$age != 0)])), add=TRUE, col="red") #line
+
+median(Customer_agreement$age_signup[which(Customer_agreement$age_signup != 0)])
+median(Customer_agreement$age[which(Customer_agreement$age != 0)])
+
 
 #Save Files
 write.csv(participant_checkin, "participant_checkin_2.csv")

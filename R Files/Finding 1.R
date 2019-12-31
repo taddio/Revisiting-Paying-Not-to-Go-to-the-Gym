@@ -1,7 +1,9 @@
+#Creating New Variables
+#--------------------------------------------------------------------------------
+
 library(data.table)
 #Importing large dataset
 participant_checkin = fread("participant_checkin_2.csv")
-participant_checkin = participant_checkin[, -1]
 
 participant_checkin_subset_1 = fread("participant_checkin_subset_1.csv")
 participant_checkin_subset_1 = participant_checkin_subset_1[, -2]
