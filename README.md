@@ -7,4 +7,4 @@ Functions used to create the create the dataset are a bit sporadic in that  - I 
 
 Ask me any questions if you want to find code for generating a particular variable or performing analysis
 
-Added Caltech SURF Report - orginally submitted in September 2019
+Added Caltech SURF Report - orginally submitted in September 2019. Results of analysis with an updated, expanded version of the dataset remain consistent with those of this paper, and were able to recreate Findings 2 and 5. Selection effects of the sample made it unsuitable for replicating Finding 6.
